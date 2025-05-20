@@ -2,7 +2,7 @@ import 'package:flutter/material.dart';
 import 'package:google_fonts/google_fonts.dart';
 import 'package:shared_preferences/shared_preferences.dart';
 import 'api_service.dart';
-import 'home_page.dart';
+import '../home/home_page.dart'; 
 import 'register_page.dart';
 import 'package:http/http.dart' as http;
 
@@ -80,34 +80,71 @@ class _LoginPageState extends State<LoginPage> {
     }
   }
 
-  void _showSuccessDialog(BuildContext context) {
-    showDialog(
-      context: context,
-      builder: (context) => AlertDialog(
-        title: Text('Success', style: GoogleFonts.cairo(color: Colors.green)),
-        content: Column(
-          mainAxisSize: MainAxisSize.min,
-          children: [
-            const Icon(Icons.check_circle, color: Colors.green, size: 50),
-            const SizedBox(height: 16),
-            Text('Login successful!', style: GoogleFonts.cairo()),
-          ],
-        ),
-        actions: [
-          TextButton(
-            onPressed: () {
-              Navigator.pop(context);
-              Navigator.pushReplacement(
-                context,
-                MaterialPageRoute(builder: (_) => const HomePage()),
-              );
-            },
-            child: Text('Continue', style: GoogleFonts.cairo()),
+void _showSuccessDialog(BuildContext context) {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.check_circle, color: Colors.green, size: 64),
+              const SizedBox(height: 16),
+              Text(
+                'Welcome Back! 🎉',
+                style: GoogleFonts.cairo(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green[800],
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Login successful, enjoy your time 🌿',
+                style: GoogleFonts.cairo(fontSize: 16, color: Colors.black87),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green[700],
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close dialog
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => const HomePage()),
+                    );
+                  },
+                  child: Text(
+                    'Continue',
+                    style: GoogleFonts.cairo(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
           ),
-        ],
-      ),
-    );
-  }
+        ),
+      );
+    },
+  );
+}
 
   void _showErrorDialog(BuildContext context, String message) {
     showDialog(
@@ -282,30 +319,31 @@ class _LoginPageState extends State<LoginPage> {
       ),
     );
   }
-
-  Widget _buildField({
-    required IconData icon,
-    required String hint,
-    required TextEditingController controller,
-    bool isPassword = false,
-    String? Function(String?)? validator,
-  }) {
-    return TextFormField(
-      controller: controller,
-      obscureText: isPassword,
-      validator: validator,
-      style: GoogleFonts.cairo(color: Colors.black87),
-      decoration: InputDecoration(
-        prefixIcon: Icon(icon, color: Color(0xFF2E7D32)),
-        labelText: hint,
-        filled: true,
-        fillColor: Colors.white.withOpacity(0.95),
-        border: OutlineInputBorder(
-          borderRadius: BorderRadius.circular(12),
-          borderSide: BorderSide.none,
-        ),
-        contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+Widget _buildField({
+  required IconData icon,
+  required String hint,
+  required TextEditingController controller,
+  bool isPassword = false,
+  String? Function(String?)? validator,
+}) {
+  return TextFormField(
+    controller: controller,
+    obscureText: isPassword,
+    validator: validator,
+    style: GoogleFonts.cairo(color: Colors.black87),
+    decoration: InputDecoration(
+      prefixIcon: Icon(icon, color: Color(0xFF2E7D32)),
+      hintText: hint, // بدل labelText
+      hintStyle: GoogleFonts.cairo(color: Colors.grey[700]),
+      filled: true,
+      fillColor: Colors.white.withOpacity(0.95),
+      border: OutlineInputBorder(
+        borderRadius: BorderRadius.circular(12),
+        borderSide: BorderSide.none,
       ),
-    );
-  }
+      contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
+    ),
+  );
+}
+
 }

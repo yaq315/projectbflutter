@@ -3,7 +3,7 @@ import 'dart:convert';
 import 'package:http/http.dart' as http;
 
 class ApiService {
-  static const String baseUrl = 'http://127.0.0.1:8000/api';
+  static const String baseUrl = 'http://10.0.2.2:8000/api';
 
   // Helper method for making GET requests
   static Future<dynamic> get(String endpoint, {String? token}) async {
@@ -70,6 +70,7 @@ static Future<List<dynamic>> getCategories() async {
       final data = json.decode(response.body);
       // إذا كان الرد يأتي كـ List مباشرة
       if (data is List) {
+        print(data);
         return data;
       }
       // إذا كان الرد يأتي كـ Map يحتوي على List
@@ -106,23 +107,21 @@ static Future<List<dynamic>> getPopularProducts() async {
 }
 
   // جلب جميع المنتجات (لصفحة See All)
-  static Future<List<dynamic>> getAllProducts() async {
-    try {
-      final response = await http.get(
-        Uri.parse('$baseUrl/products'),
-        headers: {'Accept': 'application/json'},
-      ).timeout(const Duration(seconds: 10));
+static Future<List<dynamic>> getAllProducts() async {
+  final response = await http.get(
+    Uri.parse('$baseUrl/products'),
+    headers: {'Accept': 'application/json'},
+  ).timeout(const Duration(seconds: 10));
 
-      if (response.statusCode == 200) {
-        final data = json.decode(response.body);
-        return data['products'] ?? [];
-      } else {
-        throw Exception('Failed to load all products: ${response.statusCode}');
-      }
-    } catch (e) {
-      throw Exception('All products request failed: $e');
-    }
+  if (response.statusCode == 200) {
+    final data = json.decode(response.body);
+
+    // التعديل هنا👇
+    return data['data'] ?? [];
+  } else {
+    throw Exception('Failed to load all products: ${response.statusCode}');
   }
+}
 
   // User login with improved error handling
   static Future<Map<String, dynamic>> login(String email, String password) async {
@@ -158,24 +157,128 @@ static Future<List<dynamic>> getPopularProducts() async {
       'password_confirmation': confirmPassword,
     });
   }
-
-  static Future<List<dynamic>> getProductsByCategory(int categoryId) async {
+// في ملف api_service.dart
+static Future<List<dynamic>> getProductsByCategory(int categoryId) async {
   try {
     final response = await http.get(
-      Uri.parse('$baseUrl/products?category_id=$categoryId'),
+      Uri.parse('$baseUrl/categories/$categoryId/products'), // Removed extra /api
       headers: {'Accept': 'application/json'},
     ).timeout(const Duration(seconds: 10));
 
     if (response.statusCode == 200) {
       final data = json.decode(response.body);
-      return data['data'] ?? data['products'] ?? [];
+      return data['data'] ?? [];
     } else {
-      throw Exception('Failed to load category products: ${response.statusCode}');
+      throw Exception('Failed to load products - Status: ${response.statusCode}');
     }
   } catch (e) {
-    throw Exception('Category products request failed: $e');
+    throw Exception('Failed to load products: $e');
   }
 }
 
+
+static Future<Map<String, dynamic>> getProductDetails(int productId) async {
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/products/$productId'),
+      headers: {'Accept': 'application/json'},
+    ).timeout(const Duration(seconds: 10));
+
+    if (response.statusCode == 200) {
+      return json.decode(response.body);
+    } else {
+      throw Exception('Failed to load product details: ${response.statusCode}');
+    }
+  } catch (e) {
+    throw Exception('Product details request failed: $e');
+  }
+}
+
+
+
+static Future<List<dynamic>> getCartItems(String token) async {
+  try {
+    final response = await http.get(
+      Uri.parse('$baseUrl/cart'),
+      headers: {
+        'Accept': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+    ).timeout(const Duration(seconds: 10));
+
+    if (response.statusCode == 200) {
+      final data = json.decode(response.body);
+      return data['data']['items'] ?? [];
+    } else {
+      throw Exception('Failed to load cart items: ${response.statusCode}');
+    }
+  } catch (e) {
+    throw Exception('Cart request failed: $e');
+  }
+}
+
+static Future<void> addToCart(String token, int productId, int quantity, {String size = 'medium'}) async {
+  try {
+    final response = await http.post(
+      Uri.parse('$baseUrl/cart'),
+      headers: {
+        'Accept': 'application/json',
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer $token',
+      },
+      body: json.encode({
+        'product_id': productId,
+        'quantity': quantity,
+        'size': size,
+      }),
+    ).timeout(const Duration(seconds: 10));
+
+    if (response.statusCode != 201) {
+      throw Exception('Failed to add to cart: ${response.statusCode}');
+    }
+  } catch (e) {
+    throw Exception('Add to cart failed: $e');
+  }
+}
+
+// static Future<void> updateCartItem(String token, int cartItemId, int quantity) async {
+//   try {
+//     final response = await http.put(
+//       Uri.parse('$baseUrl/cart/$cartItemId'),
+//       headers: {
+//         'Accept': 'application/json',
+//         'Content-Type': 'application/json',
+//         'Authorization': 'Bearer $token',
+//       },
+//       body: json.encode({
+//         'quantity': quantity,
+//       }),
+//     ).timeout(const Duration(seconds: 10));
+
+//     if (response.statusCode != 200) {
+//       throw Exception('Failed to update cart item: ${response.statusCode}');
+//     }
+//   } catch (e) {
+//     throw Exception('Update cart item failed: $e');
+//   }
+// }
+
+// static Future<void> removeCartItem(String token, int cartItemId) async {
+//   try {
+//     final response = await http.delete(
+//       Uri.parse('$baseUrl/cart/$cartItemId'),
+//       headers: {
+//         'Accept': 'application/json',
+//         'Authorization': 'Bearer $token',
+//       },
+//     ).timeout(const Duration(seconds: 10));
+
+//     if (response.statusCode != 200) {
+//       throw Exception('Failed to remove cart item: ${response.statusCode}');
+//     }
+//   } catch (e) {
+//     throw Exception('Remove cart item failed: $e');
+//   }
+// }
   
 }

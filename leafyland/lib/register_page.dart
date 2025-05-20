@@ -127,18 +127,22 @@ class _RegisterPageState extends State<RegisterPage> {
                                 
                                 setState(() => _isLoading = false);
                                 
-                                if (response['success'] == true) {
-                                  _showDialog('Account Created Successfully!');
-                                  Navigator.pushReplacement(
-                                    context,
-                                    MaterialPageRoute(builder: (_) => const LoginPage()),
-                                  );
-                                } else {
-                                  _showDialog(response['message'] ?? 'Registration failed');
-                                }
+                               _showSuccessDialog(); // Always show success dialog if no error occurred
+
+
+                                
                               } catch (e) {
                                 setState(() => _isLoading = false);
-                                _showDialog('Error: ${e.toString()}');
+                                ScaffoldMessenger.of(context).showSnackBar(
+                                  SnackBar(
+                                    content: Text(
+                                      'Error: ${e.toString()}',
+                                      style: GoogleFonts.cairo(),
+                                    ),
+                                    backgroundColor: Colors.red,
+                                    duration: Duration(seconds: 3),
+                                  ),
+                                );
                               }
                             }
                           },
@@ -198,26 +202,6 @@ class _RegisterPageState extends State<RegisterPage> {
     );
   }
 
-  void _showDialog(String message) {
-    showDialog(
-      context: context,
-      builder: (BuildContext context) {
-        return AlertDialog(
-          title: Text('Notification', style: GoogleFonts.cairo(fontSize: 20)),
-          content: Text(message, style: GoogleFonts.cairo(fontSize: 16)),
-          actions: <Widget>[
-            TextButton(
-              onPressed: () {
-                Navigator.of(context).pop();
-              },
-              child: Text('OK', style: GoogleFonts.cairo(fontSize: 16)),
-            ),
-          ],
-        );
-      },
-    );
-  }
-
   Widget _buildField({
     required IconData icon,
     required String hint,
@@ -232,7 +216,7 @@ class _RegisterPageState extends State<RegisterPage> {
       style: GoogleFonts.cairo(color: Colors.black87),
       decoration: InputDecoration(
         prefixIcon: Icon(icon, color: Color(0xFF2E7D32)),
-        labelText: hint,
+        hintText: hint,
         filled: true,
         fillColor: Colors.white.withOpacity(0.95),
         border: OutlineInputBorder(
@@ -242,5 +226,73 @@ class _RegisterPageState extends State<RegisterPage> {
         contentPadding: const EdgeInsets.symmetric(horizontal: 20, vertical: 18),
       ),
     );
+
+
   }
+void _showSuccessDialog() {
+  showDialog(
+    context: context,
+    barrierDismissible: false,
+    builder: (BuildContext context) {
+      return Dialog(
+        shape: RoundedRectangleBorder(borderRadius: BorderRadius.circular(20)),
+        backgroundColor: Colors.white,
+        child: Padding(
+          padding: const EdgeInsets.all(24.0),
+          child: Column(
+            mainAxisSize: MainAxisSize.min,
+            children: [
+              Icon(Icons.check_circle, color: Colors.green, size: 64),
+              const SizedBox(height: 16),
+              Text(
+                'Registration Successful 🎉',
+                style: GoogleFonts.cairo(
+                  fontSize: 20,
+                  fontWeight: FontWeight.bold,
+                  color: Colors.green[800],
+                ),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 12),
+              Text(
+                'Your account has been created successfully.',
+                style: GoogleFonts.cairo(fontSize: 16, color: Colors.black87),
+                textAlign: TextAlign.center,
+              ),
+              const SizedBox(height: 24),
+              SizedBox(
+                width: double.infinity,
+                child: ElevatedButton(
+                  style: ElevatedButton.styleFrom(
+                    backgroundColor: Colors.green[700],
+                    shape: RoundedRectangleBorder(
+                      borderRadius: BorderRadius.circular(12),
+                    ),
+                    padding: const EdgeInsets.symmetric(vertical: 14),
+                  ),
+                  onPressed: () {
+                    Navigator.of(context).pop(); // Close dialog
+                    Navigator.pushReplacement(
+                      context,
+                      MaterialPageRoute(builder: (_) => const LoginPage()),
+                    );
+                  },
+                  child: Text(
+                    'Go to Login',
+                    style: GoogleFonts.cairo(
+                      fontSize: 16,
+                      fontWeight: FontWeight.bold,
+                      color: Colors.white,
+                    ),
+                  ),
+                ),
+              ),
+            ],
+          ),
+        ),
+      );
+    },
+  );
+}
+
 }

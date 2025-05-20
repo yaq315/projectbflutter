@@ -13,11 +13,20 @@ class Category {
 
   factory Category.fromJson(Map<String, dynamic> json) {
     return Category(
-      id: json['id'],
-      name: json['name'],
-      image: json['image'] ?? 'http://127.0.0.1:8000/api/categories',
-      description: json['description'],
+      id: json['id'] as int,
+      name: json['name'] as String,
+      image: _getFullImageUrl(json['image'] as String),
+      description: json['description'] as String?,
     );
+  }
+
+  static String _getFullImageUrl(String path) {
+    if (path.startsWith('http')) {
+      return path;
+    }
+    // إصلاح المسار لضمان أنه يبدأ بشرطة مائلة
+    final fixedPath = path.startsWith('/') ? path : '/$path';
+    return 'http://localhost:8000$fixedPath';
   }
 }
 
@@ -33,6 +42,8 @@ class Product {
   final bool isHot;
   final bool isOnSale;
   final int stock;
+  final String? careInstructions; 
+  final String? usage; 
 
   Product({
     required this.id,
@@ -46,6 +57,8 @@ class Product {
     required this.isHot,
     required this.isOnSale,
     required this.stock,
+    this.careInstructions,
+    this.usage,
   });
 
   factory Product.fromJson(Map<String, dynamic> json) {
@@ -61,7 +74,8 @@ class Product {
       isHot: json['is_hot'],
       isOnSale: json['is_on_sale'],
       stock: json['stock'],
+      careInstructions: json['care_instructions'],
+      usage: json['usage'],
     );
   }
-
 }
